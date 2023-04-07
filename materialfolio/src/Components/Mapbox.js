@@ -102,6 +102,8 @@ class MapboxMap extends Component {
   };
 
   render() {
+    const { mapLoaded } = this.state;
+
     return (
       <div ref={(el) => (this.mapContainer = el)} className="mapContainer" />
     );
