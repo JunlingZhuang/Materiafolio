@@ -1,16 +1,15 @@
-import React, { Component } from "react";
-import MapboxMap from "./Components/Mapbox.js";
-import CsvReader from "./Components/CsvReader.js";
+import LayOut from "./Components/Layout.js";
 
-class App extends Component {
-  render() {
-    return (
-      <div className="app">
-        <MapboxMap />
-        <CsvReader />
-      </div>
-    );
-  }
-}
+const App = () => {
+  // const [csvData, setCsvData] = useState([]);
+
+  return (
+    <div>
+      {/* <CsvReader setCsvData={setCsvData} />
+      <MapboxMap csvData={csvData} /> */}
+      <LayOut />
+    </div>
+  );
+};
 
 export default App;

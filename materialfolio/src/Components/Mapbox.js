@@ -26,12 +26,64 @@ class MapboxMap extends Component {
       center: [lng, lat],
       zoom: zoom,
       pitch: 0, // 设置 pitch 属性为 0，即 2D 模式
+      attributionControl: false, // 移除版权信息
     });
+    this.map.on("zoom", this.handleMapZoom);
 
     this.map.on("click", this.handleMapClick);
+    this.map.on("load", () => {
+      this.addPointsFromCsv(this.props.csvData);
+    });
+  }
+  //check if csv props update
+  componentDidUpdate(prevProps) {
+    if (prevProps.csvData !== this.props.csvData) {
+      this.addPointsFromCsv(this.props.csvData);
+    }
   }
 
+  addPointsFromCsv = (csvData) => {
+    const { markers } = this.state;
+
+    markers.forEach((marker) => {
+      marker.remove();
+    });
+
+    const newMarkers = csvData
+      .map((row) => {
+        const lat = parseFloat(row.y);
+        const lng = parseFloat(row.x);
+
+        // console.log("Row data:", row);
+        // console.log("Parsed lat, lng:", lat, lng);
+
+        if (isNaN(lat) || isNaN(lng)) {
+          // 如果经纬度值无效，则跳过该点
+          console.warn("Invalid LngLat:", lat, lng);
+          return null;
+        }
+        const el = document.createElement("div");
+        el.className = "custom-marker";
+
+        // 鼠标悬停事件监听器
+        el.addEventListener("mouseenter", () => {
+          el.classList.add("custom-marker-hover");
+        });
+
+        el.addEventListener("mouseleave", () => {
+          el.classList.remove("custom-marker-hover");
+        });
+
+        return new mapboxgl.Marker({ element: el })
+          .setLngLat([lng, lat])
+          .addTo(this.map);
+      })
+      .filter((marker) => marker !== null); // 过滤掉无效的标记
+    this.setState({ markers: newMarkers });
+  };
+
   componentWillUnmount() {
+    this.map.off("zoom", this.handleMapZoom);
     this.state.markers.forEach((marker) => {
       marker.remove();
     });
@@ -39,7 +91,16 @@ class MapboxMap extends Component {
     this.map.off("click", this.handleMapClick);
     this.map.remove();
   }
-
+  handleMapZoom = () => {
+    const zoom = this.map.getZoom();
+    const markers = this.state.markers;
+    markers.forEach((marker) => {
+      const markerElement = marker.getElement();
+      const newSize = Math.max(2, 2 * Math.pow(1.8, zoom - 12));
+      markerElement.style.width = `${newSize}px`;
+      markerElement.style.height = `${newSize}px`;
+    });
+  };
   handleMapClick = async (e) => {
     const { lng, lat } = e.lngLat;
 
@@ -75,7 +136,10 @@ class MapboxMap extends Component {
 
         const popup = new mapboxgl.Popup({ offset: 25 }).setDOMContent(img);
 
-        const marker = new mapboxgl.Marker()
+        const marker = new mapboxgl.Marker({
+          color: "#FFFFFF",
+          draggable: true,
+        })
           .setLngLat([lng, lat])
           .setPopup(popup)
           .addTo(this.map);

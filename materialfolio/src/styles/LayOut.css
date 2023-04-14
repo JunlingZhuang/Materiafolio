@@ -1,0 +1,32 @@
+.layout-container {
+  height: 100%;
+}
+
+.layout-row {
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.layout-col-left,
+.layout-col-right {
+  padding: 0 !important;
+}
+
+.layout-canvas-container,
+.layout-map-container {
+  width: 100%;
+  height: 80vh;
+  background-color: black;
+  padding: 0 !important;
+}
+
+.layout-canvas {
+  height: 100vh;
+}
+.layout-row-top,
+.layout-row-bottom {
+  background-color: black;
+  height: 10vh;
+}
