@@ -3,9 +3,9 @@ import * as d3 from "d3";
 
 const CsvReader = ({ setCsvData }) => {
   useEffect(() => {
-    d3.csv("./Test.csv").then((data) => {
+    d3.csv("./CSV/Columbia_SVIpoints_4326_output.csv").then((data) => {
       setCsvData(data);
-      console.log(data);
+      // console.log(data);
     });
   }, [setCsvData]);
 

@@ -2,12 +2,13 @@ import * as THREE from "three";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
-import randomWord from "random-words";
+// import randomWord from "random-words";
 
-function Word({ children, ...props }) {
+function Word({ children, opacity = 1, ...props }) {
   const color = new THREE.Color();
   const fontProps = {
-    font: "/Inter-Bold.woff",
+    // font: "/Inter-Bold.woff",
+    
     fontSize: 2.5,
     letterSpacing: -0.05,
     lineHeight: 1,
@@ -31,6 +32,7 @@ function Word({ children, ...props }) {
       color.set(hovered ? "#fa2720" : "white"),
       0.1
     );
+    
   });
   return (
     <Text

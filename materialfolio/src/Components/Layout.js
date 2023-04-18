@@ -7,16 +7,25 @@ import Cloud from "./WordCloud";
 import { Text, TrackballControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { MaterialList } from "./MaterialList.js";
+import TerminalEffect from "./TerminalEffect.js";
 import "../styles/LayOut.css";
 // import Danmu from "./Danmu.js";
 
 function LayOut() {
   const [csvData, setCsvData] = useState([]);
+  const commandList = [
+    " Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic,chalkboard, clutter, concrete, cork, engineeredstone,fabric,fiberglass]",
+    " Neil submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
+    " Zoe submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
+  ];
+  // "Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic,chalkboard, clutter, concrete, cork, engineeredstone,fabric,fiberglass]",
 
   return (
     <Container fluid className="layout-container">
       {/* 顶部 Row */}
-      <Row className="layout-row-top">在这里添加您想放在顶部的内容</Row>
+      <Row className="layout-row-top">
+        <h1>Materialfolio</h1>
+      </Row>
       <Row className="layout-row">
         <Col md={4} lg={4} xl={4} xxl={4} className="layout-col-left">
           <Container className="layout-canvas-container">
@@ -39,7 +48,9 @@ function LayOut() {
         </Col>
       </Row>
 
-      <Row className="layout-row-bottom">{/* <Danmu /> */}</Row>
+      <Row className="layout-row-bottom">
+        <TerminalEffect commandList={commandList} />
+      </Row>
     </Container>
   );
 }

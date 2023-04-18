@@ -1,0 +1,25 @@
+.terminal-effect {
+  overflow-y: scroll;
+  max-height: 100%; /* 设置最大高度为容器高度 */
+  background-color: #000;
+  color: #ffffff;
+  padding: 1rem;
+  font-family: "Courier New", Courier, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all; /* 添加此属性，使文本在超过容器宽度时自动换行 */
+}
+
+/* 针对不同浏览器隐藏滚动条 */
+.terminal-effect::-webkit-scrollbar {
+  width: 0; /* 隐藏滚动条 */
+}
+
+.terminal-effect::-webkit-scrollbar-track {
+  background: transparent; /* 设置轨道背景为透明 */
+}
+
+.terminal-effect::-webkit-scrollbar-thumb {
+  background: transparent; /* 设置滚动条滑块背景为透明 */
+}

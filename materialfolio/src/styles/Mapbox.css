@@ -1,5 +1,5 @@
 .mapContainer {
-  height: 80vh;
+  height: 75vh;
 }
 .mapboxgl-canvas {
   position: absolute;
@@ -23,4 +23,19 @@
   border-radius: 50%;
   background-color: #ff0000;
   border: 2px solid #ffffff;
+}
+
+/* .custom-popup {
+  background-color: black;
+  border: 1px solid white;
+  padding: 5px;
+  max-width: 250px;
+} */
+
+.mapboxgl-popup.custom-popup .mapboxgl-popup-content {
+  background-color: black;
+  border: 1px solid white;
+  border-radius: 4px;
+  padding: 5px;
+  box-sizing: border-box;
 }

@@ -53,32 +53,53 @@ class MapboxMap extends Component {
       .map((row) => {
         const lat = parseFloat(row.y);
         const lng = parseFloat(row.x);
-
-        // console.log("Row data:", row);
-        // console.log("Parsed lat, lng:", lat, lng);
+        const sviId = row.SVI_ID;
 
         if (isNaN(lat) || isNaN(lng)) {
-          // 如果经纬度值无效，则跳过该点
           console.warn("Invalid LngLat:", lat, lng);
           return null;
         }
+
         const el = document.createElement("div");
         el.className = "custom-marker";
 
-        // 鼠标悬停事件监听器
+        // 从 SVI_ID 获取图像路径
+        const imagePath = `./SVI_Images/${sviId}.jpg`; // 请根据实际情况修改路径
+
         el.addEventListener("mouseenter", () => {
           el.classList.add("custom-marker-hover");
+
+          const img = new Image();
+          img.src = imagePath;
+          img.style.width = "200px";
+          img.style.backgroundColor = "transparent"; // 添加这一行
+          const customPopupStyle = `
+          background-color: black;
+          border: 1px solid white;
+          border-radius: 4px;
+          padding: 5px;
+          box-sizing: border-box;
+        `;
+        const popup = new mapboxgl.Popup({ offset: 25, className: 'custom-popup' }).setDOMContent(img);
+        
+
+          marker.setPopup(popup);
+          marker.togglePopup();
         });
 
         el.addEventListener("mouseleave", () => {
           el.classList.remove("custom-marker-hover");
+          marker.togglePopup();
         });
 
-        return new mapboxgl.Marker({ element: el })
+        const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([lng, lat])
           .addTo(this.map);
+
+        return marker;
       })
-      .filter((marker) => marker !== null); // 过滤掉无效的标记
+      .filter((marker) => marker !== null);
+
     this.setState({ markers: newMarkers });
   };
 
@@ -117,7 +138,7 @@ class MapboxMap extends Component {
         img.src = reader.result;
         img.style.width = "200px";
 
-        // 发送图片到后端并接收裁剪后的图片
+        // Send images to the backend and receive the cropped images
         const formData = new FormData();
         formData.append("file", file);
         const response = await fetch("http://127.0.0.1:5000/upload", {
@@ -125,7 +146,7 @@ class MapboxMap extends Component {
           body: formData,
         });
 
-        // 用裁剪后的图片替换原图片
+        // Replace the original image with the cropped image
         if (response.ok) {
           const blob = await response.blob();
           const croppedImageUrl = URL.createObjectURL(blob);
