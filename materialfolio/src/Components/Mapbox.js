@@ -123,7 +123,7 @@ class MapboxMap extends Component {
               }
 
               if (row[material] == 0) {
-                materialOpacity[material] = "rgb(0, 0, 0)";
+                materialOpacity[material] = "black";
               } else {
                 materialOpacity[material] = "white";
               }
