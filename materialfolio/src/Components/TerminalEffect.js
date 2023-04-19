@@ -33,9 +33,9 @@ const TerminalEffect = ({ commandList }) => {
     };
 
     typeWriter();
-    console.log("start typewriter");
+    // console.log("start typewriter");
     return () => {
-      console.log("stop typewriter");
+      // console.log("stop typewriter");
       clearTimeout(timeoutId);
     };
   }, [commandList]);

@@ -39,3 +39,16 @@
   padding: 5px;
   box-sizing: border-box;
 }
+.mapbox-button {
+  position: absolute;
+  background-color: black;
+  color: white;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  transition: all 0.3s;
+}
+.mapbox-button.pressed {
+  background-color: white;
+  color: black;
+}

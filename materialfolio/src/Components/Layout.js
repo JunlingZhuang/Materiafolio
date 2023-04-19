@@ -12,9 +12,14 @@ import "../styles/LayOut.css";
 // import Danmu from "./Danmu.js";
 
 function LayOut() {
+  const [materialOpacity, setMaterialOpacity] = useState({});
+
+  function updateCloudMaterialOpacity(newOpacity) {
+    setMaterialOpacity(newOpacity);
+  }
   const [csvData, setCsvData] = useState([]);
   const commandList = [
-    " Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic,chalkboard, clutter, concrete, cork, engineeredstone,fabric,fiberglass]",
+    " Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [chalkboard, clutter, concrete, cork, engineeredstone,fabric,fiberglass]",
     " Neil submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
     " Zoe submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
   ];
@@ -35,7 +40,12 @@ function LayOut() {
               className="layout-canvas"
             >
               <fog attach="fog" args={["#202025", 0, 80]} />
-              <Cloud count={8} radius={20} wordsList={MaterialList} />
+              <Cloud
+                count={8}
+                radius={20}
+                wordsList={MaterialList}
+                materialOpacity={materialOpacity}
+              />
               <TrackballControls />
             </Canvas>
           </Container>
@@ -43,7 +53,10 @@ function LayOut() {
         <Col md={8} lg={8} xl={8} xxl={8} className="layout-col-right">
           <Container className="layout-map-container">
             <CsvReader setCsvData={setCsvData} />
-            <MapboxMap csvData={csvData} />
+            <MapboxMap
+              csvData={csvData}
+              updateCloudMaterialOpacity={updateCloudMaterialOpacity}
+            />
           </Container>
         </Col>
       </Row>
