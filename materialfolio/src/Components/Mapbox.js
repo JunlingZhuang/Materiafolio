@@ -37,17 +37,17 @@ class MapboxMap extends Component {
 
     this.map.on("click", this.handleMapClick);
     this.map.on("load", () => {
-      this.addPointsFromCsv(this.props.jsonData);
+      this.addPointsFromJson(this.props.jsonData);
     });
   }
-  //check if csv props update
+  //check if Json props update
   componentDidUpdate(prevProps) {
     if (prevProps.jsonData !== this.props.jsonData) {
-      this.addPointsFromCsv(this.props.jsonData);
+      this.addPointsFromJson(this.props.jsonData);
     }
   }
 
-  addPointsFromCsv = (jsonData) => {
+  addPointsFromJson = (jsonData) => {
     const { markers } = this.state;
 
     markers.forEach((marker) => {
@@ -229,11 +229,9 @@ class MapboxMap extends Component {
         }
 
         const popup = new mapboxgl.Popup({ offset: 25 }).setDOMContent(img);
-
-        const marker = new mapboxgl.Marker({
-          color: "#FFFFFF",
-          draggable: true,
-        })
+        const el = document.createElement("div");
+        el.className = "custom-marker"; // 使用自定义样式
+        const marker = new mapboxgl.Marker({ element: el, draggable: false }) // 使用自定义元素
           .setLngLat([lng, lat])
           .setPopup(popup)
           .addTo(this.map);
