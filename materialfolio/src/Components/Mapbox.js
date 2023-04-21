@@ -9,9 +9,9 @@ class MapboxMap extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      lng: -74.006,
-      lat: 40.7128,
-      zoom: 12,
+      lng: -73.9626,
+      lat: 40.8075,
+      zoom: 16,
       // doubleClickZoom: false, // 禁用双击放大功能
       markers: [],
       isMapClickEnabled: true, // 添加这个状态变量
@@ -77,7 +77,7 @@ class MapboxMap extends Component {
         let currentImagePath = imagePath1;
         const img = new Image();
 
-        const materialOpacity = {};
+        const materialHoverList = {};
         let maxMaterialName = "";
         let maxValue = -Infinity;
 
@@ -110,7 +110,7 @@ class MapboxMap extends Component {
           marker.setPopup(popup);
           marker.togglePopup();
 
-          const materialOpacity = {};
+          const materialHoverList = {};
           let maxMaterialName = "";
           let maxValue = -Infinity;
           for (const material in row) {
@@ -124,9 +124,9 @@ class MapboxMap extends Component {
               }
 
               if (row[material] == 0) {
-                materialOpacity[material] = "black";
+                materialHoverList[material] = "black";
               } else {
-                materialOpacity[material] = "white";
+                materialHoverList[material] = "white";
               }
             }
           }
@@ -141,7 +141,7 @@ class MapboxMap extends Component {
           // console.log(el);
 
           // 更新词云组件的透明度
-          this.props.updateCloudMaterialOpacity(materialOpacity);
+          this.props.updateCloudMaterialOpacity(materialHoverList);
         });
 
         el.addEventListener("mouseleave", () => {
@@ -153,11 +153,11 @@ class MapboxMap extends Component {
 
           el.classList.remove("custom-marker-hover");
           marker.togglePopup();
-          const materialOpacity = {};
+          const materialHoverList = {};
           for (const material in row) {
-            materialOpacity[material] = "white";
+            materialHoverList[material] = "white";
           }
-          this.props.updateCloudMaterialOpacity(materialOpacity);
+          this.props.updateCloudMaterialOpacity(materialHoverList);
         });
 
         const marker = new mapboxgl.Marker({ element: el })
