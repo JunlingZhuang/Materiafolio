@@ -37,25 +37,26 @@ class MapboxMap extends Component {
 
     this.map.on("click", this.handleMapClick);
     this.map.on("load", () => {
-      this.addPointsFromCsv(this.props.csvData);
+      this.addPointsFromCsv(this.props.jsonData);
     });
   }
   //check if csv props update
   componentDidUpdate(prevProps) {
-    if (prevProps.csvData !== this.props.csvData) {
-      this.addPointsFromCsv(this.props.csvData);
+    if (prevProps.jsonData !== this.props.jsonData) {
+      this.addPointsFromCsv(this.props.jsonData);
     }
   }
 
-  addPointsFromCsv = (csvData) => {
+  addPointsFromCsv = (jsonData) => {
     const { markers } = this.state;
 
     markers.forEach((marker) => {
       marker.remove();
     });
 
-    const newMarkers = csvData
+    const newMarkers = jsonData
       .map((row) => {
+        console.log(row);
         const lat = parseFloat(row.y);
         const lng = parseFloat(row.x);
         const sviId = row.SVI_ID;

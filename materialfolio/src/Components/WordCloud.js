@@ -75,14 +75,23 @@ export default function Cloud({
     const phiSpan = Math.PI / (count + 1);
     const thetaSpan = (Math.PI * 2) / count;
     let k = 0; // 添加一个计数变量
+
+    // 添加缩放因子
+    const scaleX = 1;
+    const scaleY = 1; // 调整 Y 轴缩放因子以改变椭圆体的高度
+    const scaleZ = 1;
+
     for (let i = 1; i < count + 1; i++)
       for (let j = 0; j < count; j++) {
-        temp.push([
-          new THREE.Vector3().setFromSpherical(
-            spherical.set(radius, phiSpan * i, thetaSpan * j)
-          ),
-          wordsList[k], // 使用 wordsList 替换随机词汇
-        ]);
+        const pos = new THREE.Vector3().setFromSpherical(
+          spherical.set(radius, phiSpan * i, thetaSpan * j)
+        );
+        // 应用缩放因子
+        pos.x *= scaleX;
+        pos.y *= scaleY;
+        pos.z *= scaleZ;
+
+        temp.push([pos, wordsList[k]]); // 使用 wordsList 替换随机词汇
         k++; // 更新计数变量
       }
     return temp;

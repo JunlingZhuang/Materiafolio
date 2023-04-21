@@ -13,7 +13,10 @@
 .layout-col-right {
   padding: 0 !important;
 }
-
+.layout-d3-col,
+.layout-wordcloud-col {
+  padding: 0 !important;
+}
 .layout-canvas-container,
 .layout-map-container {
   width: 100%;
@@ -21,8 +24,15 @@
   background-color: black;
   padding: 0 !important;
 }
+.layout-d3-container {
+  height: 75vh;
+  width: 100%;
+  background-color: black;
+}
 
 .layout-canvas {
+  padding: 0 !important;
+
   height: 100vh;
 }
 .layout-row-bottom {
