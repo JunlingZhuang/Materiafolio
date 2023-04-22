@@ -129,7 +129,7 @@ export default function Cloud({
       wordColor={
         getRatioByName(word, formattedMaterialClickList, "ratio") > 0.01
           ? getRatioByName(word, formattedMaterialClickList, "color")
-          : "white"
+          : "grey"
       }
     />
   ));
