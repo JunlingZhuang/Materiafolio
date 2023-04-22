@@ -127,7 +127,9 @@ export default function Cloud({
       children={word}
       opacity={getRatioByName(word, formattedMaterialHoverList, "hide")}
       wordColor={
-        getRatioByName(word, formattedMaterialClickList, "color") || "white"
+        getRatioByName(word, formattedMaterialClickList, "ratio") > 0.01
+          ? getRatioByName(word, formattedMaterialClickList, "color")
+          : "white"
       }
     />
   ));

@@ -204,7 +204,7 @@ class MapboxMap extends Component {
               formattedMaterialClickList.push({
                 name: material,
                 ratio: row[material],
-                color: "white",
+                color: materialColor,
               });
             }
           }
