@@ -1,8 +1,9 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "../styles/Mapbox.css";
-import { MaterialList } from "./MaterialList.js";
+import { MaterialList1 } from "./MaterialList1";
+
 // import HeatmapLayer from './HeatmapLayer'; // 导入 HeatmapLayer 组件
 
 class MapboxMap extends Component {
@@ -16,9 +17,9 @@ class MapboxMap extends Component {
       markers: [],
       isMapClickEnabled: true, // 添加这个状态变量
       modeText: "Mode: Upload", // 设置初始值
+      isMaterialColor: false, // 添加这个状态变量
     };
   }
-
   componentDidMount() {
     const { lng, lat, zoom } = this.state;
 
@@ -48,6 +49,11 @@ class MapboxMap extends Component {
   }
 
   addPointsFromJson = (jsonData) => {
+    //bool for color mode
+
+    let materialList = MaterialList1.map((material) => material.name);
+    // console.log(materialList);
+    // console.log(materialList.includes("none"));
     const { markers } = this.state;
 
     markers.forEach((marker) => {
@@ -56,10 +62,11 @@ class MapboxMap extends Component {
 
     const newMarkers = jsonData
       .map((row) => {
-        console.log(row);
+        // console.log(row);
         const lat = parseFloat(row.y);
         const lng = parseFloat(row.x);
         const sviId = row.SVI_ID;
+        // console.log(sviId);
 
         if (isNaN(lat) || isNaN(lng)) {
           // console.warn("Invalid LngLat:", lat, lng);
@@ -77,22 +84,49 @@ class MapboxMap extends Component {
         let currentImagePath = imagePath1;
         const img = new Image();
 
-        const materialHoverList = {};
-        let maxMaterialName = "";
-        let maxValue = -Infinity;
-
         el.addEventListener("click", () => {
-          console.log("click111");
           // 切换图片路径
           currentImagePath =
             currentImagePath === imagePath1 ? imagePath2 : imagePath1;
-          console.log(currentImagePath);
+          // console.log(currentImagePath);
           img.src = currentImagePath;
+
+          //切换颜色
+          this.setState(
+            (prevState) => {
+              // console.log(
+              //   "Previous isMaterialColor:",
+              //   prevState.isMaterialColor
+              // );
+              return { isMaterialColor: !prevState.isMaterialColor };
+            },
+            () => {
+              // 将处理颜色切换的代码放入此回调函数中
+              // console.log("after isMaterialColor:", this.state.isMaterialColor);
+
+              const formattedMaterialClickList = [];
+
+              for (const material in row) {
+                if (materialList.includes(material)) {
+                  const materialColor = this.state.isMaterialColor
+                    ? MaterialList1.find((m) => m.name === material).color
+                    : "white";
+                  formattedMaterialClickList.push({
+                    name: material,
+                    ratio: row[material],
+                    color: materialColor,
+                  });
+                }
+              }
+              this.props.updateCloudMaterialColorClick(
+                formattedMaterialClickList
+              );
+            }
+          );
         });
 
         el.addEventListener("mouseenter", () => {
           img.src = currentImagePath;
-
           img.style.width = "200px";
           img.style.backgroundColor = "transparent"; // 添加这一行
           const customPopupStyle = `
@@ -110,26 +144,29 @@ class MapboxMap extends Component {
           marker.setPopup(popup);
           marker.togglePopup();
 
-          const materialHoverList = {};
+          const formattedMaterialHoverList = [];
           let maxMaterialName = "";
           let maxValue = -Infinity;
           for (const material in row) {
-            // console.log(material);
+            const ifHide = row[material] < 0.01;
+            if (materialList.includes(material)) {
+              const materialColor = MaterialList1.find(
+                (m) => m.name === material
+              ).color;
+              formattedMaterialHoverList.push({
+                name: material,
+                ratio: row[material],
+                color: materialColor,
+                hide: ifHide,
+              });
 
-            if (MaterialList.includes(material)) {
-              // console.log(material);
-              if (row[material] !== 0 && row[material] > maxValue) {
+              if (row[material] > 0.01 && row[material] > maxValue) {
                 maxValue = row[material];
                 maxMaterialName = material;
               }
-
-              if (row[material] == 0) {
-                materialHoverList[material] = "black";
-              } else {
-                materialHoverList[material] = "white";
-              }
             }
           }
+          // console.log(formattedMaterialHoverList);
           // 从图库中根据最大值材料的名字获取对应的图片
           const imagePath_material = `./Material_images/${maxMaterialName}.jpg`;
           // 将获取到的图片设置为 marker 的背景图
@@ -141,23 +178,57 @@ class MapboxMap extends Component {
           // console.log(el);
 
           // 更新词云组件的透明度
-          this.props.updateCloudMaterialOpacity(materialHoverList);
+          console.log(formattedMaterialHoverList);
+
+          this.props.updateCloudMaterialColorandOpacity(
+            formattedMaterialHoverList
+          );
         });
 
         el.addEventListener("mouseleave", () => {
-          // 将图片路径改回第一张图片的路径
-
+          this.setState({ isMaterialColor: false });
           currentImagePath = imagePath1;
           img.src = currentImagePath;
           el.style.opacity = 0.5;
 
           el.classList.remove("custom-marker-hover");
           marker.togglePopup();
-          const materialHoverList = {};
+
+          const formattedMaterialClickList = [];
+
           for (const material in row) {
-            materialHoverList[material] = "white";
+            if (materialList.includes(material)) {
+              const materialColor = this.state.isMaterialColor
+                ? MaterialList1.find((m) => m.name === material).color
+                : "white";
+              formattedMaterialClickList.push({
+                name: material,
+                ratio: row[material],
+                color: "white",
+              });
+            }
           }
-          this.props.updateCloudMaterialOpacity(materialHoverList);
+
+          const formattedMaterialHoverList = [];
+
+          for (const material in row) {
+            if (materialList.includes(material)) {
+              const materialColor = MaterialList1.find(
+                (m) => m.name === material
+              ).color;
+              formattedMaterialHoverList.push({
+                name: material,
+                ratio: row[material],
+                color: materialColor,
+                hide: false,
+              });
+            }
+          }
+          // console.log(formattedMaterialClickList);
+          this.props.updateCloudMaterialColorandOpacity(
+            formattedMaterialHoverList
+          );
+          this.props.updateCloudMaterialColorClick(formattedMaterialClickList);
         });
 
         const marker = new mapboxgl.Marker({ element: el })
@@ -190,6 +261,12 @@ class MapboxMap extends Component {
       markerElement.style.height = `${newSize}px`;
     });
   };
+
+  // handleColorToggle = () => {
+  //   this.setState((prevState) => ({
+  //     isMaterialColor: !prevState.isMaterialColor,
+  //   }));
+  // };
   handleMapClick = async (e) => {
     // console.log(this.state.isMapClickEnabled);
     if (!this.state.isMapClickEnabled) {

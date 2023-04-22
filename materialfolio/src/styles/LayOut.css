@@ -11,18 +11,34 @@
 
 .layout-col-left,
 .layout-col-right {
+  background-color: black;
+
   padding: 0 !important;
 }
 .layout-d3-col,
 .layout-wordcloud-col {
   padding: 0 !important;
 }
-.layout-canvas-container,
-.layout-map-container {
+.layout-canvas-container {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 75vh;
   background-color: black;
   padding: 0 !important;
+}
+
+.layout-map-container {
+  background-color: black;
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 75vh;
+  background-color: black;
+  margin: 2px black;
+}
+.layout-canvas-container-hover {
+  box-shadow: 0 0 0 1px white inset; /* 使用 box-shadow 代替 border */
 }
 .layout-d3-container {
   height: 75vh;
@@ -41,6 +57,7 @@
 }
 .layout-row-top {
   background-color: black;
+  margin-top: 20px;
   height: 10vh;
 }
 

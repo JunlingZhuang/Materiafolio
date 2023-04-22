@@ -2,14 +2,18 @@ import * as THREE from "three";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
+import { MaterialList1 } from "./MaterialList1";
 // import randomWord from "random-words";
 
-function Word({ children, wordcolor, ...props }) {
+function Word({ children, opacity, wordColor, ...props }) {
+  // 添加一个新的状态：currentColor
+  const [currentColor, setCurrentColor] = useState("white");
+  // console.log(wordColor);
   // console.log(children);
   const color = new THREE.Color();
+  // console.log(wordColor);
   const fontProps = {
     // font: "/Inter-Bold.woff",
-
     fontSize: 2.5,
     letterSpacing: -0.05,
     lineHeight: 1,
@@ -21,16 +25,30 @@ function Word({ children, wordcolor, ...props }) {
   const out = () => setHovered(false);
   // Change the mouse cursor on hover
   useEffect(() => {
-    if (hovered) document.body.style.cursor = "pointer";
-    return () => (document.body.style.cursor = "auto");
-  }, [hovered]);
+    if (hovered) {
+      document.body.style.cursor = "pointer";
+    } else {
+      document.body.style.cursor = "auto";
+    }
+    setCurrentColor(wordColor || "white");
+  }, [wordColor, hovered]);
   // Tie component to the render-loop
   useFrame(({ camera }) => {
     // Make text face the camera
     ref.current.quaternion.copy(camera.quaternion);
 
     // 假设我们有一个名为 targetOpacity 的目标透明度变量
-    let targetOpacity = hovered ? 1 : wordcolor === "black" ? 0.3 : 1;
+    // let targetOpacity = hovered ? 1 : opacity === 0 ? 0.3 : 1;
+    let targetOpacity;
+    if (hovered) {
+      targetOpacity = 1;
+    } else if (opacity == true) {
+      targetOpacity = 0.05;
+    } else {
+      targetOpacity = 1;
+    }
+
+    // let targetOpacity = 1;
 
     // 使用 THREE.MathUtils.lerp 方法进行插值
     ref.current.material.opacity = THREE.MathUtils.lerp(
@@ -41,11 +59,7 @@ function Word({ children, wordcolor, ...props }) {
 
     // Animate font color
     ref.current.material.color.lerp(
-      // color.set(hovered ? "#fa2720" : materialOpacity[children] || "white"),
-      // 0.1
-      // color.set(hovered ? wordcolor : "white"),
-      // 0.1
-      color.set(hovered ? "red" : wordcolor),
+      color.set(hovered ? "red" : currentColor),
       0.2
     );
   });
@@ -66,8 +80,16 @@ export default function Cloud({
   count = 4,
   radius = 20,
   wordsList,
-  materialOpacity,
+  formattedMaterialHoverList,
+  formattedMaterialClickList,
 }) {
+  function getRatioByName(word, Listname, datatype) {
+    for (const key in Listname) {
+      if (Listname[key].name === word) {
+        return Listname[key][datatype];
+      }
+    }
+  }
   // 使用 useMemo 计算 words
   const words = useMemo(() => {
     const temp = [];
@@ -103,7 +125,10 @@ export default function Cloud({
       key={index}
       position={pos}
       children={word}
-      wordcolor={materialOpacity[word] || "white"}
+      opacity={getRatioByName(word, formattedMaterialHoverList, "hide")}
+      wordColor={
+        getRatioByName(word, formattedMaterialClickList, "color") || "white"
+      }
     />
   ));
 }

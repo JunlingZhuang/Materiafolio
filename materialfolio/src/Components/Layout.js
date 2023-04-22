@@ -1,8 +1,8 @@
 // 导入 React 及相关组件
+import { useMemo, useState, useRef } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import MapboxMap from "./Mapbox.js";
 import JsonReader from "./JsonReader.js";
-import React, { useState } from "react";
 import Cloud from "./WordCloud.js";
 import { Text, TrackballControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
@@ -14,24 +14,42 @@ import "../styles/LayOut.css";
 // import Danmu from "./Danmu.js";
 
 function LayOut() {
-  const [materialOpacity, setMaterialOpacity] = useState({});
+  // 创建一个引用来获取组件容器
+  const containerRef = useRef();
 
-  function updateCloudMaterialOpacity(newOpacity) {
+  // 定义鼠标悬停和离开的事件处理器
+  const handleMouseEnter = () => {
+    containerRef.current.classList.add("layout-canvas-container-hover");
+  };
+
+  const handleMouseLeave = () => {
+    containerRef.current.classList.remove("layout-canvas-container-hover");
+  };
+
+  const [formattedMaterialHoverList, setMaterialOpacity] = useState([]);
+  const [formattedMaterialClickList, setMaterialColor] = useState({});
+
+  function updateCloudMaterialColorandOpacity(newOpacity) {
     setMaterialOpacity(newOpacity);
   }
-  const [jsonData, setJsonData] = useState([]);
 
-  const data = [
-    { name: "A", value: 30 },
-    { name: "B", value: 50 },
-    { name: "C", value: 10 },
-    { name: "D", value: 20 },
-    { name: "E", value: 20 },
-    { name: "F", value: 20 },
-    { name: "G", value: 20 },
-    { name: "H", value: 20 },
-    { name: "I", value: 20 },
-  ];
+  function updateCloudMaterialColorClick(newColor) {
+    setMaterialColor(newColor);
+  }
+
+  const [jsonData, setJsonData] = useState([]);
+  const convertedData = useMemo(() => {
+    return formattedMaterialHoverList
+      .filter((item) => item.ratio > 0.01) // 过滤掉ratio小于0.01的数据点
+      .map((item) => {
+        return {
+          name: item.name,
+          value: Number(item.ratio),
+          color: item.color,
+        };
+      });
+  }, [formattedMaterialHoverList]);
+
   const commandList = [
     " Saralee submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
     " Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [chalkboard, clutter, concrete, cork, engineeredstone,fabric,fiberglass]",
@@ -51,7 +69,7 @@ function LayOut() {
           <Row>
             <Col md={2} lg={2} xl={2} xxl={2} className="layout-d3-col">
               <Container className="layout-d3-container">
-                <BarChart data={data} />
+                <BarChart data={convertedData} />
               </Container>
             </Col>
             <Col
@@ -61,7 +79,12 @@ function LayOut() {
               xxl={10}
               className="layout-wordcloud-col"
             >
-              <Container className="layout-canvas-container">
+              <Container
+                className="layout-canvas-container"
+                ref={containerRef}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
                 <Canvas
                   dpr={[1, 2]}
                   camera={{ position: [0, 0, 35], fov: 90 }}
@@ -72,7 +95,8 @@ function LayOut() {
                     count={8}
                     radius={20}
                     wordsList={MaterialList}
-                    materialOpacity={materialOpacity}
+                    formattedMaterialHoverList={formattedMaterialHoverList}
+                    formattedMaterialClickList={formattedMaterialClickList}
                   />
                   <TrackballControls />
                 </Canvas>
@@ -84,9 +108,11 @@ function LayOut() {
           <Container className="layout-map-container">
             <JsonReader setJsonData={setJsonData} />
             <MapboxMap
-              // csvData={csvData}
               jsonData={jsonData}
-              updateCloudMaterialOpacity={updateCloudMaterialOpacity}
+              updateCloudMaterialColorandOpacity={
+                updateCloudMaterialColorandOpacity
+              }
+              updateCloudMaterialColorClick={updateCloudMaterialColorClick}
             />
           </Container>
         </Col>
