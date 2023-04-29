@@ -68,7 +68,7 @@ function Word({ children, opacity, wordColor, ...props }) {
       ref={ref}
       onPointerOver={over}
       onPointerOut={out}
-      onClick={() => console.log("clicked")}
+      onClick={() => console.log(children)}
       {...props}
       {...fontProps}
       children={children}
@@ -83,6 +83,8 @@ export default function Cloud({
   formattedMaterialHoverList,
   formattedMaterialClickList,
 }) {
+  const [selectedWord, setSelectedWord] = useState("");
+
   function getRatioByName(word, Listname, datatype) {
     for (const key in Listname) {
       if (Listname[key].name === word) {

@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import mapboxgl from "!mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -267,13 +267,13 @@ class MapboxMap extends Component {
           img.src = currentImagePath;
           img.style.width = "200px";
           img.style.backgroundColor = "transparent"; // 添加这一行
-          const customPopupStyle = `
-          background-color: black;
-          border: 1px solid white;
-          border-radius: 4px;
-          padding: 5px;
-          box-sizing: border-box;
-        `;
+          //   const customPopupStyle = `
+          //   background-color: black;
+          //   border: 1px solid white;
+          //   border-radius: 4px;
+          //   padding: 5px;
+          //   box-sizing: border-box;
+          // `;
           const popup = new mapboxgl.Popup({
             offset: 25,
             className: "custom-popup",
@@ -481,7 +481,6 @@ class MapboxMap extends Component {
   };
 
   render() {
-    const { mapLoaded } = this.state;
     return (
       <div ref={(el) => (this.mapContainer = el)} className="mapContainer">
         <button className="mapbox-button" onClick={this.handleButtonClick}>

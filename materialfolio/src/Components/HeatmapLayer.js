@@ -21,19 +21,20 @@ const HeatmapLayer = ({ map }) => {
           // console.log("完整的 foliageData: ", foliageData);
 
           const geoJSONData = {
-            type: "Feature",
+            type: "FeatureCollection",
             features: foliageData,
           };
-          // console.log(geoJSONData);
+          console.log("处理后的GeoJSON数据：", geoJSONData);
 
-          map.on("load", () => {
+          // console.log(geoJSONData);
+          if (map.loaded()) {
             map.addSource("foliage-heatmap", {
               type: "geojson",
               data: geoJSONData,
             });
 
             map.addLayer({
-              id: "foliage-heatmap",
+              id: "foliageheatmap",
               type: "heatmap",
               source: "foliage-heatmap",
               paint: {
@@ -46,8 +47,8 @@ const HeatmapLayer = ({ map }) => {
                   1,
                   1,
                 ],
-                "heatmap-radius": 300000000,
-                "heatmap-intensity": 1000000,
+                "heatmap-radius": 120,
+                "heatmap-intensity": 0.8,
                 "heatmap-color": [
                   "interpolate",
                   ["linear"],
@@ -67,16 +68,13 @@ const HeatmapLayer = ({ map }) => {
                 ],
               },
             });
-            const heatmapLayer = map.getLayer("foliage-heatmap");
-            console.log(heatmapLayer); // 在这里打印 heatmapLayer
-          });
-
+          }
           return () => {
-            if (map.getLayer("foliage-heatmap")) {
-              map.removeLayer("foliage-heatmap");
+            if (map.getLayer("foliageheatmap")) {
+              map.removeLayer("foliageheatmap");
             }
-            if (map.getSource("foliage-heatmap")) {
-              map.removeSource("foliage-heatmap");
+            if (map.getSource("foliageheatmap")) {
+              map.removeSource("foliageheatmap");
             }
           };
         });
