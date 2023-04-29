@@ -1,7 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
-import { scaleOrdinal } from "d3-scale";
-import { schemeCategory10 } from "d3-scale-chromatic";
 import "../styles/BarChart.css";
 
 const BarChart = ({ data }) => {
@@ -43,8 +41,6 @@ const BarChart = ({ data }) => {
       .domain(["Stacked Bar"])
       .range([0, innerWidth * factor]); // 将 range 乘以一个因子以根据容器宽度调整条形宽度
     // .padding(0.2);
-
-    const colorScale = scaleOrdinal(schemeCategory10);
 
     // const xAxis = d3.axisBottom(xScale);
     // svg

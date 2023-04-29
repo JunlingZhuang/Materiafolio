@@ -10,11 +10,16 @@ import { MaterialList } from "./MaterialList.js";
 import TerminalEffect from "./TerminalEffect.js";
 import BarChart from "./Barchart.js";
 import "../styles/LayOut.css";
+import HeatmapLayer from "./HeatmapLayer.js";
 
 // import Danmu from "./Danmu.js";
 
 function LayOut() {
+  const [mapInstance, setMapInstance] = useState(null);
+  // console.log(mapInstance);
+
   // 创建一个引用来获取组件容器
+
   const containerRef = useRef();
 
   // 定义鼠标悬停和离开的事件处理器
@@ -52,9 +57,10 @@ function LayOut() {
 
   const commandList = [
     " Saralee submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
-    " Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [chalkboard, clutter, concrete, cork, engineeredstone,fabric,fiberglass]",
+    " Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [concrete, cork, engineeredstone,fabric,fiberglass]",
     " Neil submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
-    " Zoe submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic ]",
+    " Zoe submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [glass, carpet,cilingtile,ceramic ]",
+    " Ziyu submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [liquid, cork,cilingtile,ceramic ]",
   ];
   // "Junling submitted a new image, submitted at [40.8075° N, 73.9626° W], containing building materials [cardboard, carpet,cilingtile,ceramic,chalkboard, clutter, concrete, cork, engineeredstone,fabric,fiberglass]",
 
@@ -107,7 +113,9 @@ function LayOut() {
         <Col md={7} lg={7} xl={7} xxl={7} className="layout-col-right">
           <Container className="layout-map-container">
             <JsonReader setJsonData={setJsonData} />
+            <HeatmapLayer map={mapInstance} />
             <MapboxMap
+              onMapLoad={setMapInstance}
               jsonData={jsonData}
               updateCloudMaterialColorandOpacity={
                 updateCloudMaterialColorandOpacity

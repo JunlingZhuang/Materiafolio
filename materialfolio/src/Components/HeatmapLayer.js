@@ -1,70 +1,89 @@
-import React, { Component } from "react";
-import mapboxgl from "mapbox-gl";
-import "../styles/Mapbox.css";
-import "mapbox-gl/dist/mapbox-gl.css";
+// HeatmapLayer.js
+import React, { useEffect } from "react";
 
-async function fetchGeoJsonData() {
-  const response = await fetch(
-    "https://data.cityofnewyork.us/api/geospatial/cpf4-rkhq?method=export&format=GeoJSON"
-  );
-  const geojsonData = await response.json();
-  return geojsonData;
-}
+const HeatmapLayer = ({ map }) => {
+  // console.log(setHeatmapData);
+  useEffect(() => {
+    if (map) {
+      fetch("./CSV/Columbia_SVIpoints_4326_output.json")
+        .then((response) => response.json())
+        .then((rawData) => {
+          const foliageData = rawData.map((item) => ({
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [parseFloat(item.x), parseFloat(item.y)],
+            },
+            properties: {
+              foliage: parseFloat(item.foliage),
+            },
+          }));
+          // console.log("完整的 foliageData: ", foliageData);
 
-class HeatmapLayer extends Component {
-  componentDidMount() {
-    const { map } = this.props;
-    fetchGeoJsonData().then((geojsonData) => {
-      this.addHeatmapLayer(map, geojsonData);
-    });
-  }
-  addHeatmapLayer(map, geojsonData) {
-    map.addSource("heatmap-source", {
-      type: "geojson",
-      data: geojsonData,
-    });
+          const geoJSONData = {
+            type: "Feature",
+            features: foliageData,
+          };
+          // console.log(geoJSONData);
 
-    map.addLayer({
-      id: "heatmap",
-      type: "heatmap",
-      source: "heatmap-source",
-      paint: {
-        "heatmap-weight": [
-          "interpolate",
-          ["linear"],
-          ["get", "density"],
-          0,
-          0,
-          5,
-          1,
-        ],
-        "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 1, 9, 3],
-        "heatmap-color": [
-          "interpolate",
-          ["linear"],
-          ["heatmap-density"],
-          0,
-          "rgba(33,102,172,0)",
-          0.2,
-          "rgb(103,169,207)",
-          0.4,
-          "rgb(209,229,240)",
-          0.6,
-          "rgb(253,219,199)",
-          0.8,
-          "rgb(239,138,98)",
-          1,
-          "rgb(178,24,43)",
-        ],
-        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 9, 20],
-        "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 7, 1, 9, 0],
-      },
-    });
-  }
+          map.on("load", () => {
+            map.addSource("foliage-heatmap", {
+              type: "geojson",
+              data: geoJSONData,
+            });
 
-  render() {
-    return null;
-  }
-}
+            map.addLayer({
+              id: "foliage-heatmap",
+              type: "heatmap",
+              source: "foliage-heatmap",
+              paint: {
+                "heatmap-weight": [
+                  "interpolate",
+                  ["linear"],
+                  ["get", "foliage"],
+                  0,
+                  0,
+                  1,
+                  1,
+                ],
+                "heatmap-radius": 300000000,
+                "heatmap-intensity": 1000000,
+                "heatmap-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["heatmap-density"],
+                  0,
+                  "rgba(33,102,172,0)",
+                  0.2,
+                  "rgb(103,169,207)",
+                  0.4,
+                  "rgb(209,229,240)",
+                  0.6,
+                  "rgb(253,219,199)",
+                  0.8,
+                  "rgb(239,138,98)",
+                  1,
+                  "rgb(178,24,43)",
+                ],
+              },
+            });
+            const heatmapLayer = map.getLayer("foliage-heatmap");
+            console.log(heatmapLayer); // 在这里打印 heatmapLayer
+          });
+
+          return () => {
+            if (map.getLayer("foliage-heatmap")) {
+              map.removeLayer("foliage-heatmap");
+            }
+            if (map.getSource("foliage-heatmap")) {
+              map.removeSource("foliage-heatmap");
+            }
+          };
+        });
+    }
+  }, [map]);
+
+  return null;
+};
 
 export default HeatmapLayer;

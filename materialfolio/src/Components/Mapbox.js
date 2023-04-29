@@ -1,5 +1,6 @@
 import React, { Component, useState } from "react";
-import mapboxgl from "mapbox-gl";
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import mapboxgl from "!mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "../styles/Mapbox.css";
 import { MaterialList1 } from "./MaterialList1";
@@ -18,6 +19,8 @@ class MapboxMap extends Component {
       isMapClickEnabled: true, // 添加这个状态变量
       modeText: "Mode: Upload", // 设置初始值
       isMaterialColor: false, // 添加这个状态变量
+      lines: [], //add Line layer
+      toggleLines: true,
     };
   }
   componentDidMount() {
@@ -38,6 +41,7 @@ class MapboxMap extends Component {
 
     this.map.on("click", this.handleMapClick);
     this.map.on("load", () => {
+      this.props.onMapLoad(this.map);
       this.addPointsFromJson(this.props.jsonData);
     });
   }
@@ -50,10 +54,8 @@ class MapboxMap extends Component {
 
   addPointsFromJson = (jsonData) => {
     //bool for color mode
-
     let materialList = MaterialList1.map((material) => material.name);
-    // console.log(materialList);
-    // console.log(materialList.includes("none"));
+
     const { markers } = this.state;
 
     markers.forEach((marker) => {
@@ -72,6 +74,18 @@ class MapboxMap extends Component {
           // console.warn("Invalid LngLat:", lat, lng);
           return null;
         }
+        // 计算出当前数据对象中最大的材料比例所对应的材料名称
+        let maxMaterialName = "";
+        let maxValue = -Infinity;
+        for (const material in row) {
+          if (materialList.includes(material)) {
+            if (row[material] > maxValue) {
+              maxValue = row[material];
+              maxMaterialName = material;
+            }
+          }
+        }
+        // console.log(maxMaterialName);
 
         const el = document.createElement("div");
         el.className = "custom-marker";
@@ -85,6 +99,137 @@ class MapboxMap extends Component {
         const img = new Image();
 
         el.addEventListener("click", () => {
+          function getColorByDistance(
+            distance,
+            minDistance,
+            maxDistance,
+            baseColor
+          ) {
+            const ratio =
+              (distance - minDistance) / (maxDistance - minDistance);
+
+            // 将 baseColor（格式为 "rgb(r, g, b)"）转换为一个包含 r、g、b 数值的数组
+            const colorArray = baseColor
+              .substring(4, baseColor.length - 1)
+              .split(", ")
+              .map((value) => parseInt(value));
+
+            // 使用线性插值方法生成渐变颜色
+            const r = Math.round(colorArray[0] + (255 - colorArray[0]) * ratio);
+            const g = Math.round(colorArray[1] + (255 - colorArray[1]) * ratio);
+            const b = Math.round(colorArray[2] + (255 - colorArray[2]) * ratio);
+
+            return `rgb(${r},${g},${b})`;
+          }
+
+          function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // 地球半径，单位：千米
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a =
+              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * (Math.PI / 180)) *
+                Math.cos(lat2 * (Math.PI / 180)) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const d = R * c; // 距离，单位：千米
+            return d * 1000; // 距离，单位：米
+          }
+
+          this.setState((prevState) => ({
+            toggleLines: !prevState.toggleLines,
+          }));
+          // 删除先前创建的连线
+          this.state.lines.forEach((line) => {
+            console.log(line.id);
+            if (this.map.getLayer(line.id)) {
+              this.map.removeLayer(line.id);
+              this.map.removeSource(line.id);
+            }
+          });
+          // 获取当前marker
+          const clickedMarker = marker;
+          const clickedLngLat = [
+            parseFloat(clickedMarker.relatedData.x),
+            parseFloat(clickedMarker.relatedData.y),
+          ];
+
+          // 找到具有相同最高比例材料的其他 marker
+          // console.log(this.state.markers);
+          const relatedMarkers = this.state.markers.filter((m) => {
+            return m.maxMaterial === maxMaterialName;
+          });
+          // });
+          // console.log(relatedMarkers[0].relatedData.x);
+          if (this.state.toggleLines) {
+            relatedMarkers.forEach((marker) => {
+              const relatedData = marker.relatedData;
+
+              const relatedLngLat = [
+                parseFloat(relatedData.x),
+                parseFloat(relatedData.y),
+              ];
+              // 计算距离
+              const distance = getDistance(
+                clickedLngLat[1],
+                clickedLngLat[0],
+                relatedLngLat[1],
+                relatedLngLat[0]
+              );
+
+              // 获取最小和最大距离（可根据实际需求进行调整）
+              const minDistance = 0;
+              const maxDistance = 5000;
+
+              // 根据 maxMaterialName 查找对应的颜色
+              const baseColor = MaterialList1.find(
+                (m) => m.name === maxMaterialName
+              ).color;
+
+              // 根据距离生成渐变颜色
+              const lineColor = getColorByDistance(
+                distance,
+                minDistance,
+                maxDistance,
+                baseColor
+              );
+              // console.log(parseFloat(relatedData.x));
+              const lineCoordinates = [clickedLngLat, relatedLngLat];
+              // console.log(lineCoordinates);
+
+              const newLine = {
+                id: `line-${clickedMarker._pos.x}-${clickedMarker._pos.y}-${marker._pos.x}-${marker._pos.y}`,
+
+                type: "line",
+                source: {
+                  type: "geojson",
+                  data: {
+                    type: "Feature",
+                    properties: {},
+                    geometry: {
+                      type: "LineString",
+                      coordinates: lineCoordinates,
+                    },
+                  },
+                },
+                layout: {
+                  "line-join": "round",
+                  "line-cap": "round",
+                },
+                paint: {
+                  "line-color": lineColor,
+                  "line-width": 0.5,
+                },
+              };
+              if (!this.map.getLayer(newLine.id)) {
+                this.map.addLayer(newLine);
+                this.setState((prevState) => ({
+                  lines: [...prevState.lines, newLine],
+                }));
+              }
+            });
+          }
           // 切换图片路径
           currentImagePath =
             currentImagePath === imagePath1 ? imagePath2 : imagePath1;
@@ -94,16 +239,9 @@ class MapboxMap extends Component {
           //切换颜色
           this.setState(
             (prevState) => {
-              // console.log(
-              //   "Previous isMaterialColor:",
-              //   prevState.isMaterialColor
-              // );
               return { isMaterialColor: !prevState.isMaterialColor };
             },
             () => {
-              // 将处理颜色切换的代码放入此回调函数中
-              // console.log("after isMaterialColor:", this.state.isMaterialColor);
-
               const formattedMaterialClickList = [];
 
               for (const material in row) {
@@ -145,8 +283,7 @@ class MapboxMap extends Component {
           marker.togglePopup();
 
           const formattedMaterialHoverList = [];
-          let maxMaterialName = "";
-          let maxValue = -Infinity;
+
           for (const material in row) {
             const ifHide = row[material] < 0.01;
             if (materialList.includes(material)) {
@@ -166,7 +303,6 @@ class MapboxMap extends Component {
               }
             }
           }
-          // console.log(formattedMaterialHoverList);
           // 从图库中根据最大值材料的名字获取对应的图片
           const imagePath_material = `./Material_images/${maxMaterialName}.jpg`;
           // 将获取到的图片设置为 marker 的背景图
@@ -178,7 +314,7 @@ class MapboxMap extends Component {
           // console.log(el);
 
           // 更新词云组件的透明度
-          console.log(formattedMaterialHoverList);
+          // console.log(formattedMaterialHoverList);
 
           this.props.updateCloudMaterialColorandOpacity(
             formattedMaterialHoverList
@@ -235,6 +371,12 @@ class MapboxMap extends Component {
           .setLngLat([lng, lat])
           .addTo(this.map);
 
+        // 为 marker 添加额外的属性，存储相关数据
+        marker.relatedData = row;
+        marker.maxMaterial = maxMaterialName; // 添加 maxMaterial 属性
+        // console.log(marker.maxMaterial);
+        // console.log(marker.relatedData);
+
         return marker;
       })
       .filter((marker) => marker !== null);
@@ -262,17 +404,12 @@ class MapboxMap extends Component {
     });
   };
 
-  // handleColorToggle = () => {
-  //   this.setState((prevState) => ({
-  //     isMaterialColor: !prevState.isMaterialColor,
-  //   }));
-  // };
   handleMapClick = async (e) => {
     // console.log(this.state.isMapClickEnabled);
     if (!this.state.isMapClickEnabled) {
       return; // 如果点击事件被禁用，直接返回
     }
-
+    console.log(e.lngLat);
     const { lng, lat } = e.lngLat;
 
     const input = document.createElement("input");
