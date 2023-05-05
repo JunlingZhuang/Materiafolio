@@ -57,3 +57,13 @@
   background-color: white;
   color: black;
 }
+
+.heatmap-button {
+  position: absolute;
+  background-color: black;
+  color: white;
+  top: 10px;
+  left: 110px;
+  z-index: 1;
+  transition: all 0.3s;
+}

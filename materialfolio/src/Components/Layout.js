@@ -4,7 +4,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import MapboxMap from "./Mapbox.js";
 import JsonReader from "./JsonReader.js";
 import Cloud from "./WordCloud.js";
-import { Text, TrackballControls } from "@react-three/drei";
+import { TrackballControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { MaterialList } from "./MaterialList.js";
 import TerminalEffect from "./TerminalEffect.js";
@@ -15,10 +15,16 @@ import HeatmapLayer from "./HeatmapLayer.js";
 // import Danmu from "./Danmu.js";
 
 function LayOut() {
+  const [word, setWord] = useState(""); // 在此定义 word 和 setWord
+  const [isHeatmapVisible, setIsHeatmapVisible] = useState(false);
+
+  const handleWordClick = (clickedWord) => {
+    // console.log("Clicked word:", clickedWord);
+    setWord(clickedWord); // 将点击的词存储在状态中
+  };
+
   const [mapInstance, setMapInstance] = useState(null);
   // console.log(mapInstance);
-
-  // 创建一个引用来获取组件容器
 
   const containerRef = useRef();
 
@@ -103,6 +109,7 @@ function LayOut() {
                     wordsList={MaterialList}
                     formattedMaterialHoverList={formattedMaterialHoverList}
                     formattedMaterialClickList={formattedMaterialClickList}
+                    onWordClick={handleWordClick} // 传递回调函数
                   />
                   <TrackballControls />
                 </Canvas>
@@ -113,7 +120,11 @@ function LayOut() {
         <Col md={7} lg={7} xl={7} xxl={7} className="layout-col-right">
           <Container className="layout-map-container">
             <JsonReader setJsonData={setJsonData} />
-            <HeatmapLayer map={mapInstance} />
+            <HeatmapLayer
+              map={mapInstance}
+              selectedWord={word}
+              isHeatmapVisible={isHeatmapVisible}
+            />
             <MapboxMap
               onMapLoad={setMapInstance}
               jsonData={jsonData}
@@ -121,6 +132,8 @@ function LayOut() {
                 updateCloudMaterialColorandOpacity
               }
               updateCloudMaterialColorClick={updateCloudMaterialColorClick}
+              isHeatmapVisible={isHeatmapVisible}
+              setIsHeatmapVisible={setIsHeatmapVisible}
             />
           </Container>
         </Col>

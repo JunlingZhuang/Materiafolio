@@ -1,75 +1,39 @@
-import React, { Component } from "react";
+import { Component } from "react";
+import { MaterialList1 } from "./MaterialList1";
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import mapboxgl from "!mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import "../styles/Mapbox.css";
-import { MaterialList1 } from "./MaterialList1";
 
-class MapboxMap extends Component {
+class MarkerLayer extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      lng: -73.9626,
-      lat: 40.8075,
-      zoom: 16,
-      // doubleClickZoom: false, // 禁用双击放大功能
-      markers: [],
-      isMapClickEnabled: true, // 添加这个状态变量
-      modeText: "Mode: Upload", // 设置初始值
-      isMaterialColor: false, // 添加这个状态变量
-      lines: [], //add Line layer
-      toggleLines: true,
-      isHeatmapVisible: false, // 初始状态为隐藏Heatmap图层
-    };
+    this.markers = [];
   }
 
   componentDidMount() {
-    const { lng, lat, zoom } = this.state;
-
-    mapboxgl.accessToken =
-      "pk.eyJ1IjoianVubGluZ3podWFuZzA2MTIiLCJhIjoiY2w2ZWM0bWJ2MDB6aTNubXhsdG8zZTJ3dSJ9.Eeqn1X7BTGldAw2_yNGbsw";
-
-    this.map = new mapboxgl.Map({
-      container: this.mapContainer,
-      style: "mapbox://styles/junlingzhuang0612/cl6faj43y001315qk9lz1aa65",
-      center: [lng, lat],
-      zoom: zoom,
-      pitch: 0, // 设置 pitch 属性为 0，即 2D 模式
-      attributionControl: false,
-    });
-
-    this.map.on("zoom", this.handleMapZoom);
-
-    this.map.on("click", this.handleMapClick);
-    this.map.on("load", () => {
-      this.props.onMapLoad(this.map);
-      this.addPointsFromJson(this.props.jsonData);
-      this.setState({ isHeatmapVisible: false });
-    });
+    this.addMarkers();
   }
-  toggleHeatmapVisibility = () => {
-    const { isHeatmapVisible, setIsHeatmapVisible } = this.props;
-    setIsHeatmapVisible(!isHeatmapVisible);
-    const heatmapLayerId = "selectedwordheatmap"; // 根据你的热力图图层ID进行修改
-    const visibility = isHeatmapVisible ? "none" : "visible";
-    this.map.setLayoutProperty(heatmapLayerId, "visibility", visibility);
-  };
-  //check if Json props update
+
   componentDidUpdate(prevProps) {
     if (prevProps.jsonData !== this.props.jsonData) {
-      this.addPointsFromJson(this.props.jsonData);
+      this.removeMarkers();
+      this.addMarkers();
     }
   }
 
-  addPointsFromJson = (jsonData) => {
+  componentWillUnmount() {
+    this.removeMarkers();
+  }
+
+  addMarkers() {
+    const jsonData = this.props.jsonData;
+    // console.log(jsonData);
     //bool for color mode
     let materialList = MaterialList1.map((material) => material.name);
 
-    const { markers } = this.state;
-
-    markers.forEach((marker) => {
-      marker.remove();
-    });
+    if (!jsonData) {
+      return;
+    }
 
     const newMarkers = jsonData
       .map((row) => {
@@ -371,124 +335,26 @@ class MapboxMap extends Component {
         return marker;
       })
       .filter((marker) => marker !== null);
+    this.markers = newMarkers;
+    // this.setState({ markers: newMarkers });
 
-    this.setState({ markers: newMarkers });
-  };
+    // 添加标记的逻辑和代码...
+    // 将之前在 MapboxMap 组件中的 addPointsFromJson 代码移至这里
+    // 使用 this.markers 数组存储添加的标记
+  }
 
-  componentWillUnmount() {
-    this.map.off("zoom", this.handleMapZoom);
-    this.state.markers.forEach((marker) => {
+  removeMarkers() {
+    // 删除标记的逻辑和代码...
+    // 使用 this.markers 数组中的 marker.remove() 方法移除标记
+    this.markers.forEach((marker) => {
       marker.remove();
     });
-
-    this.map.off("click", this.handleMapClick);
-    this.map.remove();
+    this.markers = [];
   }
-  handleMapZoom = () => {
-    const zoom = this.map.getZoom();
-    const markers = this.state.markers;
-    markers.forEach((marker) => {
-      const markerElement = marker.getElement();
-      const newSize = Math.max(2, 2 * Math.pow(1.8, zoom - 12));
-      markerElement.style.width = `${newSize}px`;
-      markerElement.style.height = `${newSize}px`;
-    });
-  };
-
-  handleMapClick = async (e) => {
-    // console.log(this.state.isMapClickEnabled);
-    if (!this.state.isMapClickEnabled) {
-      return; // 如果点击事件被禁用，直接返回
-    }
-    console.log(e.lngLat);
-    const { lng, lat } = e.lngLat;
-
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-
-    input.onchange = async () => {
-      const file = input.files[0];
-      const reader = new FileReader();
-
-      reader.onload = async () => {
-        const img = new Image();
-        img.src = reader.result;
-        img.style.width = "200px";
-
-        // Send images to the backend and receive the cropped images
-        const formData = new FormData();
-        formData.append("file", file);
-        const response = await fetch("http://127.0.0.1:5000/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        // Replace the original image with the cropped image
-        if (response.ok) {
-          const blob = await response.blob();
-          const croppedImageUrl = URL.createObjectURL(blob);
-          img.src = croppedImageUrl;
-        } else {
-          // console.error("Failed to get cropped image from server.");
-        }
-
-        const popup = new mapboxgl.Popup({ offset: 25 }).setDOMContent(img);
-        const el = document.createElement("div");
-        el.className = "custom-marker"; // 使用自定义样式
-        const marker = new mapboxgl.Marker({ element: el, draggable: false }) // 使用自定义元素
-          .setLngLat([lng, lat])
-          .setPopup(popup)
-          .addTo(this.map);
-
-        marker.getElement().addEventListener("mouseenter", () => {
-          marker.togglePopup();
-        });
-
-        marker.getElement().addEventListener("mouseleave", () => {
-          marker.togglePopup();
-        });
-
-        this.setState((prevState) => ({
-          markers: [...prevState.markers, marker],
-        }));
-      };
-
-      if (file) {
-        reader.readAsDataURL(file);
-      }
-    };
-
-    input.click();
-  };
-  handleButtonClick = () => {
-    const newModeText = this.state.isMapClickEnabled
-      ? "Mode: View"
-      : "Mode: Upload";
-    this.setState((prevState) => ({
-      isMapClickEnabled: !prevState.isMapClickEnabled,
-      modeText: newModeText, // 新增 modeText 状态变量
-    }));
-  };
 
   render() {
-    const { isHeatmapVisible } = this.state;
-
-    return (
-      <div ref={(el) => (this.mapContainer = el)} className="mapContainer">
-        <button className="mapbox-button" onClick={this.handleButtonClick}>
-          {this.state.modeText}
-        </button>
-        <button
-          className="heatmap-button "
-          onClick={this.toggleHeatmapVisibility}
-        >
-          {isHeatmapVisible ? "Hide Heatmap" : "Show Heatmap"}
-        </button>
-        {/* <HeatmapLayer isHeatmapVisible={this.state.isHeatmapVisible} /> */}
-      </div>
-    );
+    return null; // 这是一个无需渲染任何内容的组件，因为它只负责处理标记的添加和删除
   }
 }
 
-export default MapboxMap;
+export default MarkerLayer;

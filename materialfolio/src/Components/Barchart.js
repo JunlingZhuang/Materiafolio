@@ -90,7 +90,7 @@ const BarChart = ({ data }) => {
         const percentage = ((d.value / totalValue) * 100).toFixed(1);
         return `${percentage}%`;
       });
-  }, [data, height]);
+  }, [data, height, width]);
 
   return (
     <svg ref={ref} width={width} height={height}>

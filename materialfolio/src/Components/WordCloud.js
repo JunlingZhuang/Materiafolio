@@ -2,14 +2,11 @@ import * as THREE from "three";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
-import { MaterialList1 } from "./MaterialList1";
 // import randomWord from "random-words";
 
 function Word({ children, opacity, wordColor, ...props }) {
   // 添加一个新的状态：currentColor
   const [currentColor, setCurrentColor] = useState("white");
-  // console.log(wordColor);
-  // console.log(children);
   const color = new THREE.Color();
   // console.log(wordColor);
   const fontProps = {
@@ -21,7 +18,10 @@ function Word({ children, opacity, wordColor, ...props }) {
   };
   const ref = useRef();
   const [hovered, setHovered] = useState(false);
-  const over = (e) => (e.stopPropagation(), setHovered(true));
+  const over = (e) => {
+    e.stopPropagation();
+    setHovered(true);
+  };
   const out = () => setHovered(false);
   // Change the mouse cursor on hover
   useEffect(() => {
@@ -42,7 +42,7 @@ function Word({ children, opacity, wordColor, ...props }) {
     let targetOpacity;
     if (hovered) {
       targetOpacity = 1;
-    } else if (opacity == true) {
+    } else if (opacity === true) {
       targetOpacity = 0.05;
     } else {
       targetOpacity = 1;
@@ -68,7 +68,12 @@ function Word({ children, opacity, wordColor, ...props }) {
       ref={ref}
       onPointerOver={over}
       onPointerOut={out}
-      onClick={() => console.log(children)}
+      onClick={() => {
+        // console.log(children);
+        if (props.onWordClick) {
+          props.onWordClick(children); // 将材料名作为参数传递给回调函数
+        }
+      }}
       {...props}
       {...fontProps}
       children={children}
@@ -82,9 +87,8 @@ export default function Cloud({
   wordsList,
   formattedMaterialHoverList,
   formattedMaterialClickList,
+  onWordClick, // 添加onWordClick属性
 }) {
-  const [selectedWord, setSelectedWord] = useState("");
-
   function getRatioByName(word, Listname, datatype) {
     for (const key in Listname) {
       if (Listname[key].name === word) {
@@ -133,6 +137,7 @@ export default function Cloud({
           ? getRatioByName(word, formattedMaterialClickList, "color")
           : "grey"
       }
+      onWordClick={onWordClick} // 将回调函数传递给Word组件
     />
   ));
 }
