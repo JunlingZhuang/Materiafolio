@@ -14,12 +14,11 @@ class MapboxMap extends Component {
       zoom: 16,
       // doubleClickZoom: false, // 禁用双击放大功能
       markers: [],
-      isMapClickEnabled: true, // 添加这个状态变量
-      modeText: "Mode: Upload", // 设置初始值
+      isMapClickEnabled: false, // 添加这个状态变量
+      modeText: "Mode: View", // 设置初始值
       isMaterialColor: false, // 添加这个状态变量
       lines: [], //add Line layer
-      toggleLines: true,
-      isHeatmapVisible: false, // 初始状态为隐藏Heatmap图层
+      // isHeatmapVisible: false,
     };
   }
 
@@ -47,13 +46,15 @@ class MapboxMap extends Component {
       this.setState({ isHeatmapVisible: false });
     });
   }
-  toggleHeatmapVisibility = () => {
+  toggleHeatmapVisibility = async () => {
     const { isHeatmapVisible, setIsHeatmapVisible } = this.props;
-    setIsHeatmapVisible(!isHeatmapVisible);
-    const heatmapLayerId = "selectedwordheatmap"; // 根据你的热力图图层ID进行修改
-    const visibility = isHeatmapVisible ? "none" : "visible";
+    await setIsHeatmapVisible(!isHeatmapVisible);
+    console.log(isHeatmapVisible);
+    const heatmapLayerId = "selectedwordheatmap";
+    const visibility = this.props.isHeatmapVisible ? "visible" : "none";
     this.map.setLayoutProperty(heatmapLayerId, "visibility", visibility);
   };
+
   //check if Json props update
   componentDidUpdate(prevProps) {
     if (prevProps.jsonData !== this.props.jsonData) {
@@ -472,7 +473,8 @@ class MapboxMap extends Component {
   };
 
   render() {
-    const { isHeatmapVisible } = this.state;
+    const { isHeatmapVisible } = this.props;
+    console.log(isHeatmapVisible);
 
     return (
       <div ref={(el) => (this.mapContainer = el)} className="mapContainer">
@@ -485,7 +487,6 @@ class MapboxMap extends Component {
         >
           {isHeatmapVisible ? "Hide Heatmap" : "Show Heatmap"}
         </button>
-        {/* <HeatmapLayer isHeatmapVisible={this.state.isHeatmapVisible} /> */}
       </div>
     );
   }
