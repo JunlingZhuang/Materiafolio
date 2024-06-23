@@ -26,7 +26,6 @@ const TerminalEffect = ({ commandList }) => {
           timeoutId = setTimeout(typeWriter, 100);
         }
       } else {
-        // 当显示完commandList中所有内容时，将索引重置为0，重新开始循环
         currentCommandIndex = 0;
         typeWriter();
       }
